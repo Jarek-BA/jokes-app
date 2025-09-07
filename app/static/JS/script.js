@@ -1,13 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById("joke-btn").addEventListener("click", async () => {
+  const jokeBtn = document.getElementById("joke-btn");
+  const jokeEl = document.getElementById("joke");
+
+  jokeBtn.addEventListener("click", async () => {
     try {
       const res = await fetch("/joke");
-      if (!res.ok) throw new Error("Network response was not ok");
+      if (!res.ok) throw new Error("Failed to fetch joke");
       const data = await res.json();
-      document.getElementById("joke").innerText =
-        data.type === "single" ? data.joke : `${data.setup} ... ${data.delivery}`;
+
+      // Handle single vs twopart jokes
+      if (data.type === "single") {
+        jokeEl.textContent = data.joke;
+      } else if (data.type === "twopart") {
+        jokeEl.textContent = `${data.setup} 🤔 ... ${data.delivery}`;
+      } else {
+        jokeEl.textContent = "No joke found.";
+      }
     } catch (err) {
-      document.getElementById("joke").innerText = "Failed to load joke.";
+      jokeEl.textContent = "Error fetching joke!";
       console.error(err);
     }
   });

@@ -1,22 +1,17 @@
 body {
   font-family: Arial, sans-serif;
   text-align: center;
-  padding-top: 50px;
-}
-
-.container {
-  max-width: 600px;
-  margin: auto;
+  margin: 2rem;
 }
 
 button {
   padding: 10px 20px;
-  font-size: 16px;
+  font-size: 1rem;
   cursor: pointer;
 }
 
 #joke {
-  margin-top: 20px;
-  font-size: 18px;
+  margin-top: 1rem;
+  font-size: 1.2rem;
   color: #333;
 }
