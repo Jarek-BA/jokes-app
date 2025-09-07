@@ -1,4 +1,4 @@
-#!/Users/jaroslavpatak/PycharmProjects/jokes-app/venv/bin/python
+#!/Users/jaroslavpatak/PycharmProjects/jokes-jokes_app/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
