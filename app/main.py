@@ -3,32 +3,29 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import httpx
+import os
+
+# Base directory (absolute path to the app folder)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = FastAPI()
 
-# Serve static files (CSS/JS)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+# Mount static folder (absolute path)
+static_dir = os.path.join(BASE_DIR, "static")
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-# Templates folder
-templates = Jinja2Templates(directory="app/templates")
+# Templates folder (absolute path)
+templates_dir = os.path.join(BASE_DIR, "templates")
+templates = Jinja2Templates(directory=templates_dir)
 
-# JokeAPI URL
-API_URL = "https://v2.jokeapi.dev/joke/Any"
+JOKE_API_URL = "https://v2.jokeapi.dev/joke/Any"
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/joke")
 async def get_joke():
     async with httpx.AsyncClient() as client:
-        response = await client.get(API_URL)
-        response.raise_for_status()
-        data = response.json()
-
-    if data["type"] == "single":
-        joke = data["joke"]
-    else:  # twopart
-        joke = f'{data["setup"]} ... {data["delivery"]}'
-
-    return {"joke": joke}
-
-@app.get("/", response_class=HTMLResponse)
-def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+        response = await client.get(JOKE_API_URL)
+        return response.json()
