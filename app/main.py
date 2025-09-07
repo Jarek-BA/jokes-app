@@ -4,9 +4,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import httpx
 import os
+from fastapi.templating import Jinja2Templates
 
 # Base directory (absolute path to the app folder)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+templates_dir = os.path.join(BASE_DIR, "templates")
+templates = Jinja2Templates(directory=templates_dir)
 
 app = FastAPI()
 
