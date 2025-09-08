@@ -16,63 +16,57 @@ on:
 jobs:
   # The 'test' job is for running tests.
   test:
-    # The name of the job, displayed in the GitHub Actions UI.
-    name: Run Tests
-    # 'runs-on' specifies the type of machine to run the job on. 'ubuntu-latest' is a virtual machine with the latest Ubuntu version.
-    runs-on: ubuntu-latest
+    name: Run Tests                     # Display name for the test job
+    runs-on: ubuntu-latest              # Use the latest Ubuntu VM for this job
 
-    # 'steps' are a sequence of tasks to be executed in the job.
     steps:
-      # This step checks out your repository code so the job can access it.
-      - name: Checkout repository
+      - name: Checkout repository       # Step 1: Check out repo code
         uses: actions/checkout@v4
 
-      # This step sets up the Python environment.
-      - name: Set up Python
+      - name: Set up Python             # Step 2: Install the correct Python version
         uses: actions/setup-python@v5
         with:
-          # Specifies the Python version to use for the job.
-          python-version: '3.11'
+          python-version: '3.11'        # Use Python 3.11
 
-# This step installs the project's dependencies in a virtual environment.
-      - name: Install dependencies
+      - name: Install dependencies      # Step 3: Create a virtual env and install deps
         run: |
           python -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # This step runs the tests using 'pytest' within the virtual environment.
-      - name: Run tests
+      - name: Run tests                 # Step 4: Run pytest inside the virtual env
         run: |
           source .venv/bin/activate
-          PYTHONPATH=. pytest -v
+          PYTHONPATH=. pytest -v        # `-v` gives verbose test output
 
   # The 'deploy' job is for deploying the application.
   deploy:
-    # 'needs' creates a dependency; this job will only run after the 'test' job completes successfully.
-    needs: test
-    # Specifies the machine to run the deploy job on.
+    needs: test                         # Run this only after tests pass
     runs-on: ubuntu-latest
-    # This conditional expression ensures the job only runs when the push is to the 'main' branch.
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' # Only deploy from main branch
 
     steps:
-      # Checks out the repository code again for the deploy job.
-      - name: Checkout repository
+      - name: Checkout repository       # Step 1: Check out code again
         uses: actions/checkout@v4
 
-      # This step triggers a new deploy on Render using their API.
       - name: Deploy to Render
-        # 'env' sets environment variables for the current step.
         env:
-          # This pulls the Render API key from the GitHub secrets, a secure way to store sensitive information.
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-        # The 'run' command executes a shell script.
+          # Here we define environment variables that will be available only in this step.
+          # They are securely pulled from GitHub Secrets (set in repo Settings > Secrets > Actions).
+          # This way, sensitive information (like API keys) is NOT hardcoded into the workflow.
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}   # Secret API key to authenticate with Render
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }} # Unique ID of your app/service on Render
         run: |
-          # The 'curl' command is used to make a POST request to the Render API endpoint, triggering a new deployment.
-          curl -X POST \
-            -H "Accept: application/json" \
-            -H "Authorization: Bearer $RENDER_API_KEY" \
-            -d '' \
-            https://api.render.com/v1/services/<YOUR_RENDER_SERVICE_ID>/deploys
+          # The following command (curl) makes a POST request to Render's API.
+          # This request tells Render: "Please create a new deployment for my service."
+
+          curl -X POST \                                # Send a POST request (used to trigger actions)
+            -H "Accept: application/json" \             # Tell Render we want the response in JSON format
+            -H "Authorization: Bearer $RENDER_API_KEY" \# Authenticate using our secret Render API key
+            -d '' \                                     # Send an empty request body (Render just needs the POST)
+            https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys
+            # This is the endpoint for Render's Deploy API.
+            # "$RENDER_SERVICE_ID" gets replaced by your app's ID (from the dashboard).
+            # The final result is: Render receives a trigger and starts a new deployment.
+
