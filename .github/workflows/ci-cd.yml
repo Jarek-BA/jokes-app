@@ -34,15 +34,18 @@ jobs:
           # Specifies the Python version to use for the job.
           python-version: '3.11'
 
-      # This step installs the project's dependencies from the 'requirements.txt' file.
+# This step installs the project's dependencies in a virtual environment.
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
 
-      # This step runs the tests using 'pytest'.
+      # This step runs the tests using 'pytest' within the virtual environment.
       - name: Run tests
         run: |
+          source .venv/bin/activate
           PYTHONPATH=. pytest -v
 
   # The 'deploy' job is for deploying the application.
