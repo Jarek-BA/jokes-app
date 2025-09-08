@@ -40,6 +40,8 @@ CI will run these tests automatically on GitHub Actions for every push.
 •	Render automatically deploys the app on push to main
 CI/CD ensures you never ship broken code 🚢
  
+# Visual diagram
+![img.png](img.png)
 # 📁 Project Structure
 
 ````

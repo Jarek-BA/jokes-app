@@ -1,17 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- This line tells the browser that the document is HTML5 -->
   <meta charset="UTF-8">
+
+  <!-- This makes sure the page looks good on all devices
+       (desktop, tablet, mobile) by scaling it correctly -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- The text shown in the browser tab -->
   <title>😂 Random Jokes App</title>
+
+  <!-- Link to the external CSS file that contains styling rules
+       (colors, fonts, spacing, etc.) -->
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+  <!-- Main content area of the app -->
   <div class="container">
+    <!-- Page title -->
     <h1>Random Jokes</h1>
+
+    <!-- Button the user clicks to fetch a new joke -->
     <button id="joke-btn">Get a Joke</button>
+
+    <!-- Placeholder where the joke text will appear -->
     <p id="joke"></p>
   </div>
+
+  <!-- Link to the external JavaScript file that makes the button work.
+       It handles talking to the server and showing jokes. -->
   <script src="/static/js/script.js"></script>
 </body>
 </html>

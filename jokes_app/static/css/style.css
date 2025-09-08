@@ -1,17 +1,20 @@
+/* Style rules for the entire page */
 body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  margin: 2rem;
+  font-family: Arial, sans-serif; /* Use Arial font (or a similar one) for all text */
+  text-align: center;            /* Center-aligns everything on the page */
+  margin: 2rem;                  /* Adds space around the edges of the page */
 }
 
+/* Style rules for the button */
 button {
-  padding: 10px 20px;
-  font-size: 1rem;
-  cursor: pointer;
+  padding: 10px 20px; /* Adds space inside the button: 10px top/bottom, 20px left/right */
+  font-size: 1rem;    /* Makes the text inside the button a normal, readable size */
+  cursor: pointer;    /* Changes the mouse cursor to a hand when hovering over the button */
 }
 
+/* Style rules for the joke text */
 #joke {
-  margin-top: 1rem;
-  font-size: 1.2rem;
-  color: #333;
+  margin-top: 1rem;   /* Adds space above the joke text so it’s not too close to the button */
+  font-size: 1.2rem;  /* Makes the joke text slightly larger than normal text */
+  color: #333;        /* Makes the joke text a dark gray color (easier on the eyes than pure black) */
 }

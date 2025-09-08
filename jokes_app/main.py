@@ -1,36 +1,93 @@
-# app/main.py
+# jokes_app/main.py
+
+# Import the FastAPI framework, which is used to build web applications and APIs.
+# Think of FastAPI as the "engine" that powers this app.
 from fastapi import FastAPI, Request
+
+# Import two types of responses:
+# - HTMLResponse: sends back a webpage (HTML).
+# - JSONResponse: sends back data in a structured format (JSON), often used by APIs.
 from fastapi.responses import HTMLResponse, JSONResponse
+
+# Import StaticFiles: allows the app to serve CSS, JavaScript, and images
+# so that the web page looks nice and works properly.
 from fastapi.staticfiles import StaticFiles
+
+# Import Jinja2Templates: a system that lets us insert dynamic content
+# (like jokes) into HTML pages before sending them to the user.
 from fastapi.templating import Jinja2Templates
+
+# Import httpx: a library for making requests to other websites or APIs.
+# We use it here to connect to the "Joke API" and fetch jokes.
 import httpx
+
+# Import Path from Python’s built-in pathlib library.
+# Path helps us work with file and folder locations on the computer in a clean way.
 from pathlib import Path
 
+
+# -------------------------------
+# CREATE THE APP
+# -------------------------------
+
+# Create an instance of the FastAPI app.
+# This is like turning on the engine of our joke application.
+# The "title" is just a label that shows up in documentation or debugging tools.
 app = FastAPI(title="Random Joke App")
 
-# Define base directory
+
+# -------------------------------
+# DEFINE IMPORTANT FOLDERS
+# -------------------------------
+
+# BASE_DIR is the folder where this file (main.py) is located.
+# "resolve()" finds the full absolute path.
+# "parent" goes one level up (the folder that contains main.py).
 BASE_DIR = Path(__file__).resolve().parent
 
-# Mount static folder for CSS and JS
+# Mount (attach) the "static" folder so that the app can serve files like CSS (for styling)
+# or JavaScript (for interactivity). These files are located in jokes_app/static.
+# When a user’s browser requests "/static/...something...", FastAPI will look inside that folder.
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
-# Setup templates folder
+# Setup the "templates" folder.
+# This is where we put HTML files that can display dynamic content (like jokes).
+# We will use Jinja2 templates, which let us insert data into HTML pages.
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 
-@app.get("/", response_class=HTMLResponse)
+# -------------------------------
+# DEFINE ROUTES (PAGES / ENDPOINTS)
+# -------------------------------
+
+# ROUTE 1: The homepage ("/")
+@app.get("/", response_class=HTMLResponse)  # This means: when someone visits "/", return an HTML page.
 async def read_main(request: Request):
     """
-    Render the main page with the 'Get a Joke' button.
+    Show the homepage with a button labeled 'Get a Joke'.
     """
+    # Use the "index.html" template from the templates folder.
+    # Pass in the "request" object, which is required by FastAPI/Jinja2
+    # to render the page correctly.
     return templates.TemplateResponse(request, "index.html", {"request": request})
 
 
-@app.get("/joke", response_class=JSONResponse)
+# ROUTE 2: The joke endpoint ("/joke")
+@app.get("/joke", response_class=JSONResponse)  # This means: when someone visits "/joke", return JSON data.
 async def get_joke():
+    # URL of the external Joke API.
     url = "https://v2.jokeapi.dev/joke/Any"
-    async with httpx.AsyncClient() as client:
-        res = await client.get(url)
-        data = res.json()
-        return data
 
+    # Create an asynchronous HTTP client.
+    # "async with" means we open the connection, use it, and then close it automatically.
+    async with httpx.AsyncClient() as client:
+        # Send a GET request to the Joke API and wait for the response.
+        res = await client.get(url)
+
+        # Convert the response into JSON format (a dictionary in Python).
+        # This makes the data easy to work with or send back to the browser.
+        data = res.json()
+
+        # Return the joke data as JSON.
+        # Example: {"category": "Programming", "joke": "Why do programmers..."}
+        return data
