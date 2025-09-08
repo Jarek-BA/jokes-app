@@ -23,6 +23,12 @@ def test_read_main():
     # This ensures the template is rendering correctly
     assert "Get a Joke" in response.text
 
+def test_invalid_endpoint():
+    """
+    Test that a non-existent endpoint returns a 404 Not Found status.
+    """
+    response = client.get("/non-existent-url")
+    assert response.status_code == 404
 
 def test_get_joke():
     """
