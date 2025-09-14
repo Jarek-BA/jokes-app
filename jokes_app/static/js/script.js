@@ -11,13 +11,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // This is where the joke will be displayed after fetching it.
   const jokeEl = document.getElementById("joke");
 
+  // Find the element (like a <div> or <p>) with the ID "joke"
+  // This is where the joke will be displayed after fetching it
+  const langSelect = document.getElementById("language");
+
+  // Load stored language if exists, defaults to English
+  const savedLang = localStorage.getItem("jokeLang") || "en";
+  langSelect.value = savedLang;
+
   // Add an action ("event listener") to the button:
   // When the button is clicked, run the function below.
   jokeBtn.addEventListener("click", async () => {
+    const lang = langSelect.value;
+    localStorage.setItem("jokeLang", lang); // Remember the choice
+
     try {
       // Ask our backend server (FastAPI in main.py) for a joke
       // by sending a request to the "/joke" address (endpoint).
-      const res = await fetch("/joke");
+      const res = await fetch(`/joke?lang=${lang}`);
 
       // If the server response is not okay (status not 200),
       // throw an error so we can handle it in the "catch" below.

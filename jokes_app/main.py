@@ -74,9 +74,11 @@ async def read_main(request: Request):
 
 # ROUTE 2: The joke endpoint ("/joke")
 @app.get("/joke", response_class=JSONResponse)  # This means: when someone visits "/joke", return JSON data.
-async def get_joke():
+async def get_joke(lang: str = "en"):
     # URL of the external Joke API.
-    url = "https://v2.jokeapi.dev/joke/Any"
+    if lang not in ["cs", "de", "en", "es", "fr", "pt"]:
+        lang = "en"  # fallback to English
+    url = f"https://v2.jokeapi.dev/joke/Any?lang={lang}"
 
     # Create an asynchronous HTTP client.
     # "async with" means we open the connection, use it, and then close it automatically.
