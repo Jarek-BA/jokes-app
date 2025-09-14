@@ -61,12 +61,8 @@ jobs:
           # The following command (curl) makes a POST request to Render's API.
           # This request tells Render: "Please create a new deployment for my service."
 
-          curl -X POST \                                # Send a POST request (used to trigger actions)
-            -H "Accept: application/json" \             # Tell Render we want the response in JSON format
-            -H "Authorization: Bearer $RENDER_API_KEY" \# Authenticate using our secret Render API key
-            -d '' \                                     # Send an empty request body (Render just needs the POST)
-            https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys
-            # This is the endpoint for Render's Deploy API.
-            # "$RENDER_SERVICE_ID" gets replaced by your app's ID (from the dashboard).
-            # The final result is: Render receives a trigger and starts a new deployment.
-
+          curl -X POST \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -d '' \
+            https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys
