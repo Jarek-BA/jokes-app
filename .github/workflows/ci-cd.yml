@@ -1,6 +1,5 @@
 # The name of the workflow that will be displayed in the GitHub Actions tab.
 name: CI/CD Pipeline
-
 # The 'on' keyword specifies the events that trigger the workflow.
 on:
   push:
@@ -11,45 +10,37 @@ on:
     # This workflow will run on every pull request that targets the 'main' branch.
     branches:
       - main
-
 # 'jobs' groups together all the jobs that run in the workflow.
 jobs:
   # The 'test' job is for running tests.
   test:
     name: Run Tests                     # Display name for the test job
     runs-on: ubuntu-latest              # Use the latest Ubuntu VM for this job
-
     steps:
       - name: Checkout repository       # Step 1: Check out repo code
         uses: actions/checkout@v4
-
       - name: Set up Python             # Step 2: Install the correct Python version
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'        # Use Python 3.11
-
       - name: Install dependencies      # Step 3: Create a virtual env and install deps
         run: |
           python -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
-
       - name: Run tests                 # Step 4: Run pytest inside the virtual env
         run: |
           source .venv/bin/activate
           PYTHONPATH=. pytest -v        # `-v` gives verbose test output
-
   # The 'deploy' job is for deploying the application.
   deploy:
     needs: test                         # Run this only after tests pass
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' # Only deploy from main branch
-
     steps:
       - name: Checkout repository       # Step 1: Check out code again
         uses: actions/checkout@v4
-
       - name: Deploy to Render
         env:
           # Here we define environment variables that will be available only in this step.
@@ -60,13 +51,8 @@ jobs:
         run: |
           # The following command (curl) makes a POST request to Render's API.
           # This request tells Render: "Please create a new deployment for my service."
-
-          curl -X POST \                                # Send a POST request (used to trigger actions)
-            -H "Accept: application/json" \             # Tell Render we want the response in JSON format
-            -H "Authorization: Bearer $RENDER_API_KEY" \# Authenticate using our secret Render API key
-            -d '' \                                     # Send an empty request body (Render just needs the POST)
-            https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys
-            # This is the endpoint for Render's Deploy API.
-            # "$RENDER_SERVICE_ID" gets replaced by your app's ID (from the dashboard).
-            # The final result is: Render receives a trigger and starts a new deployment.
-
+          curl -X POST \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -d '' \
+            https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys
