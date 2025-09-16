@@ -63,21 +63,17 @@ jobs:
       # A) Use Testomat's official reporter/CLI (recommended if available)
       # B) Use a direct HTTP upload to Testomat API (fallback)
       # Replace the placeholder upload command below with the reporter or API call recommended by Testomat.
-      - name: Upload results to Testomat (example)
+      - name: Upload results to Testomat
         env:
-          TESTOMATIO: ${{ github.event.inputs.testomatio }}
-          TESTOMATIO_RUN: ${{ github.event.inputs.run }}
-          TESTOMATIO_URL: ${{ github.event.inputs.testomatio_url }}
+          TESTOMATIO: ${{ github.event.inputs.testomatio }}    # or from secrets if not input
+          TESTOMATIO_RUN: ${{ github.event.inputs.run }}        # from Testomat’s input
         run: |
-          # Example: using Testomat's npm reporter (this is a sample; check Testomat docs for exact flags)
-          # The reporter usually accepts a JUnit or JSON report and the Testomat token/run id.
-          # If you do not use npm reporter, use your preferred method to upload report.json to Testomat.
-          npx @testomatio/reporter --framework pytest --file report.json --token "$TESTOMATIO" --run "$TESTOMATIO_RUN" || true
-
-          # If the npm reporter isn't applicable, you could instead:
-          # curl -X POST "https://app.testomat.io/api/import" \
-          #   -H "Authorization: Bearer $TESTOMATIO" \
-          #   -F "file=@report.json" \
-          #   -F "run=$TESTOMATIO_RUN"
-          #
-          # NOTE: The curl endpoint/params above are only illustrative — check Testomat API docs for precise endpoint and required fields.
+          pip install pytestomatio
+      
+          # If you want filtering:
+          if [ "${{ github.event.inputs.grep }}" != "" ]; then
+            TESTOMATIO=$TESTOMATIO TESTOMATIO_RUN=$TESTOMATIO_RUN pytest -k "${{ github.event.inputs.grep }}" --testomatio report
+          else
+            TESTOMATIO=$TESTOMATIO TESTOMATIO_RUN=$TESTOMATIO_RUN pytest --testomatio report
+          fi
+      
