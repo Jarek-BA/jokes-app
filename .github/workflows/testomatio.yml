@@ -1,0 +1,83 @@
+name: testomatio.yml   # use the filename or exact name later in Testomat
+
+# This workflow is triggered manually via API / Testomat.
+on:
+  workflow_dispatch:
+    inputs:
+      grep:
+        description: 'Tests filter (optional). Example: TestName or substring.'
+        required: false
+        default: ''
+      run:
+        description: 'Testomat Run ID (optional, used to link results)'
+        required: false
+        default: ''
+      testomatio:
+        description: 'Testomat API token - provided by Testomat when triggering (optional)'
+        required: false
+        default: ''
+      testomatio_url:
+        description: 'Custom Testomat host if needed (optional)'
+        required: false
+        default: ''
+
+jobs:
+  test:
+    name: Run tests for Testomat
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          # Install optional reporter tools (choose one)
+          pip install pytest pytest-json-report  # json-report plugin for pytest
+
+      # Run tests. We expose TESTOMATIO and TESTOMATIO_RUN env vars so the reporter (or a later step) can use them.
+      - name: Run pytest
+        env:
+          # These values come from the workflow_dispatch inputs
+          TESTOMATIO: ${{ github.event.inputs.testomatio }}
+          TESTOMATIO_RUN: ${{ github.event.inputs.run }}
+          TESTOMATIO_URL: ${{ github.event.inputs.testomatio_url }}
+        run: |
+          # If a grep string is passed from Testomat, run only matching tests.
+          # We produce a machine-readable report (JSON) for the upload step.
+          if [ "${{ github.event.inputs.grep }}" != "" ]; then
+            pytest -k "${{ github.event.inputs.grep }}" --json-report --json-report-file=report.json -q
+          else
+            pytest --json-report --json-report-file=report.json -q
+          fi
+
+      # Upload / report results to Testomat.
+      # There are two common ways to send results:
+      # A) Use Testomat's official reporter/CLI (recommended if available)
+      # B) Use a direct HTTP upload to Testomat API (fallback)
+      # Replace the placeholder upload command below with the reporter or API call recommended by Testomat.
+      - name: Upload results to Testomat (example)
+        env:
+          TESTOMATIO: ${{ github.event.inputs.testomatio }}
+          TESTOMATIO_RUN: ${{ github.event.inputs.run }}
+          TESTOMATIO_URL: ${{ github.event.inputs.testomatio_url }}
+        run: |
+          # Example: using Testomat's npm reporter (this is a sample; check Testomat docs for exact flags)
+          # The reporter usually accepts a JUnit or JSON report and the Testomat token/run id.
+          # If you do not use npm reporter, use your preferred method to upload report.json to Testomat.
+          npx @testomatio/reporter --framework pytest --file report.json --token "$TESTOMATIO" --run "$TESTOMATIO_RUN" || true
+
+          # If the npm reporter isn't applicable, you could instead:
+          # curl -X POST "https://app.testomat.io/api/import" \
+          #   -H "Authorization: Bearer $TESTOMATIO" \
+          #   -F "file=@report.json" \
+          #   -F "run=$TESTOMATIO_RUN"
+          #
+          # NOTE: The curl endpoint/params above are only illustrative — check Testomat API docs for precise endpoint and required fields.
