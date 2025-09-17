@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "testomatio:sync": "TESTOMATIO=$TESTOMATIO npx check-tests playwright \"*.spec.js\" -d tests/",
-    "testomatio:report": "TESTOMATIO=$TESTOMATIO TESTOMATIO_RUN=$TESTOMATIO_RUN npx @testomatio/reporter replay tests/test-results/results.json"
+    "testomatio:report": "TESTOMATIO=$TESTOMATIO TESTOMATIO_RUN=$TESTOMATIO_RUN npx @testomatio/reporter xml tests/test-results/junit.xml"
   },
   "repository": {
     "type": "git",
