@@ -22,6 +22,6 @@ jobs:
 
       - name: Sync tests to Testomat.io
         env:
-          TESTOMATIO: ${{ secrets.TESTOMATIO }}
+          TESTOMATIO: ${{ secrets.TESTOMATIO_API_KEY }}
         run: |
           npx check-tests playwright

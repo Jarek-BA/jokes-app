@@ -42,7 +42,7 @@ jobs:
 
       - name: Upload results to Testomat.io
         env:
-          TESTOMATIO: ${{ github.event.inputs.testomatio }}
-          TESTOMATIO_RUN: ${{ github.event.inputs.run }}"
+          TESTOMATIO: ${{ secrets.TESTOMATIO_API_KEY}} # Secret API key to authenticate with Testomatio
+          TESTOMATIO_RUN: ${{ github.run_id }}
         run: |
           npx @testomatio/reporter xml tests/test-results/junit.xml
