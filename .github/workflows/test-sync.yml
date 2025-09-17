@@ -1,0 +1,27 @@
+name: Test Sync with Testomat.io
+
+on:
+  schedule:
+    - cron: "0 * * * *" # every hour
+  workflow_dispatch: # allow manual trigger too
+
+jobs:
+  sync-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Sync tests to Testomat.io
+        env:
+          TESTOMATIO: ${{ secrets.TESTOMATIO }}
+        run: |
+          npx check-tests playwright
