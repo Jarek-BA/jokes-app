@@ -8,10 +8,25 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Jarek-BA/jokes-app.git"
+    "url": "git+https://github.com/Jarek-BA/jokes-app.git"
   },
   "private": true,
-  "dependencies": {
+  "devDependencies": {
     "@playwright/test": "^1.55.0"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "playwright": "^1.55.0",
+    "playwright-core": "^1.55.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Jarek-BA/jokes-app/issues"
+  },
+  "homepage": "https://github.com/Jarek-BA/jokes-app#readme"
 }
