@@ -1,9 +1,20 @@
 name: Test Sync with Testomat.io
 
 on:
- ## schedule:
- ##  - cron: "0 * * * *" # every hour
-  workflow_dispatch: # allow manual trigger too
+  workflow_dispatch:
+    inputs:
+      testomatio:
+        description: "Testomatio API key"
+        required: true
+        type: string
+      testomatio_url:
+        description: "Testomatio project URL"
+        required: false
+        type: string
+      run:
+        description: "Run ID for Testomat.io"
+        required: false
+        type: string
 
 jobs:
   sync-tests:
@@ -20,13 +31,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Sync tests to Testomat.io
+      - name: Sync Playwright tests with Testomat.io
         env:
-          TESTOMATIO: ${{github.event.inputs.testomatio}}
-          TESTOMATIO_URL: ${{github.event.inputs.testomatio_url}}
-          TESTOMATIO_RUN: ${{github.event.inputs.run}}
-          ## TESTOMATIO: ${{ secrets.TESTOMATIO_API_KEY }}
-          ## TESTOMATIO_PROJECT: ${{ secrets.TESTOMATIO_PROJECT_ID }}
-          ## TESTOMATIO_RUN: ${{ github.run_id }}
+            TESTOMATIO: ${{ github.event.inputs.testomatio }}
+            TESTOMATIO_URL: ${{ github.event.inputs.testomatio_url }}
+            TESTOMATIO_RUN: ${{ github.event.inputs.run }}
         run: |
-          npx check-tests playwright
+              npx check-tests playwright "*.spec.js" -d tests/
