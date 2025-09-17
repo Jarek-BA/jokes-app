@@ -1,0 +1,24 @@
+nname: Keep Render App Alive
+
+on:
+  schedule:
+    # Every 15 minutes between 6:00 and 22:00
+    - cron: '*/10 7-23 * * *'
+  workflow_dispatch: # manual trigger option
+
+jobs:
+  ping-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render app
+        env:
+          RENDER_URL: https://jokes-app-ew5b.onrender.com/
+        run: |
+          echo "🟢 Pinging Render app to keep it awake..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $RENDER_URL)
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ Render app is awake (HTTP $HTTP_STATUS)"
+          else
+            echo "⚠️ Ping failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
