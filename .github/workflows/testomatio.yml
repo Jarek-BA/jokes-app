@@ -33,16 +33,16 @@ jobs:
         run: npx playwright install
 
       - name: Run Playwright Tests
-        run: |
-          npx playwright test --reporter=list,junit --output=tests/test-results
+        run: npx playwright test
 
       - name: Upload results to Testomat.io
         env:
+
           TESTOMATIO: ${{github.event.inputs.testomatio}}
           TESTOMATIO_URL: ${{github.event.inputs.testomatio_url}}
           TESTOMATIO_RUN: ${{github.event.inputs.run}}
           ## TESTOMATIO: ${{ secrets.TESTOMATIO_API_KEY}} # Secret API key to authenticate with Testomatio
-          ##TESTOMATIO_PROJECT: ${{ secrets.TESTOMATIO_PROJECT_ID }}
+          ## TESTOMATIO_PROJECT: ${{ secrets.TESTOMATIO_PROJECT_ID }}
           ## TESTOMATIO_RUN: ${{ github.run_id }}
         run: |
           npx @testomatio/reporter xml tests/test-results/results.xml
