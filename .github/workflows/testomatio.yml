@@ -32,17 +32,13 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install
 
-      - name: Run Playwright tests
+      - name: Run Playwright Tests
         run: |
-          if [ "${{ github.event.inputs.grep }}" != "" ]; then
-            npx playwright test --grep "${{ github.event.inputs.grep }}" --reporter=list,json --output=report || true
-          else
-            npx playwright test --reporter=list,json --output=report || true
-          fi
+          npx playwright test --reporter=list,junit --output=tests/test-results
 
       - name: Upload results to Testomat.io
         env:
           TESTOMATIO: ${{ secrets.TESTOMATIO_API_KEY}} # Secret API key to authenticate with Testomatio
           TESTOMATIO_RUN: ${{ github.run_id }}
         run: |
-          npx @testomatio/reporter xml tests/test-results/junit.xml
+          npx @testomatio/reporter xml tests/test-results/results.xml
