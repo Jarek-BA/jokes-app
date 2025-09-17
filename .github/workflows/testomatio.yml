@@ -58,10 +58,12 @@ jobs:
           # If a grep string is passed from Testomat, run only matching tests.
           # We produce a machine-readable report (JSON) for the upload step.
           if [ "${{ github.event.inputs.grep }}" != "" ]; then
-            pytest -k "${{ github.event.inputs.grep }}" --json-report --json-report-file=report.json -q
+            GREP_EXPR=$(echo "${{ github.event.inputs.grep }}" | sed 's/|/ or /g')
+            pytest -k "$GREP_EXPR" --json-report --json-report-file=report.json -q
           else
             pytest --json-report --json-report-file=report.json -q
           fi
+
 
       # Upload / report results to Testomat.
       # There are two common ways to send results:
