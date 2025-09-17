@@ -2,7 +2,7 @@ nname: Keep Render App Alive
 
 on:
   schedule:
-    # Every 15 minutes between 6:00 and 22:00
+    # Every 15 minutes between 7:00 and 23:00
     - cron: '*/10 7-23 * * *'
   workflow_dispatch: # manual trigger option
 
