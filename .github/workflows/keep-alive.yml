@@ -1,4 +1,4 @@
-nname: Keep Render App Alive
+name: Keep Render App Alive
 
 on:
   schedule:
