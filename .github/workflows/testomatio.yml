@@ -41,7 +41,8 @@ jobs:
           fi
 
       - name: Upload results to Testomat.io
+        env:
+          TESTOMATIO: ${{ github.event.inputs.testomatio }}
+          TESTOMATIO_RUN: ${{ github.event.inputs.run }}"
         run: |
           npx @testomatio/reporter xml tests/test-results/junit.xml
-            --token "${{ github.event.inputs.testomatio }}" 
-            --run "${{ github.event.inputs.run }}"
