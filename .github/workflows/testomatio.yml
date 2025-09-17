@@ -1,93 +1,46 @@
-name: testomatio.yml   # use the filename or exact name later in Testomat
+name: Testomat.io CI
 
-# This workflow is triggered manually via API / Testomat.
 on:
-  workflow_dispatch:
+  workflow_dispatch: # allow manual triggering from Testomat
     inputs:
       grep:
-        description: 'Tests filter (optional). Example: TestName or substring.'
+        description: "Filter tests to run (optional)"
         required: false
-        default: ''
+        default: ""
       run:
-        description: 'Testomat Run ID (optional, used to link results)'
+        description: "Testomat Run ID"
         required: false
-        default: ''
       testomatio:
-        description: 'Testomat API token - provided by Testomat when triggering (optional)'
+        description: "Testomat API token"
         required: false
-        default: ''
-      testomatio_url:
-        description: 'Custom Testomat host if needed (optional)'
-        required: false
-        default: ''
 
 jobs:
   test:
-    name: Run tests for Testomat
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: 18
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          # Install optional reporter tools (choose one)
-          pip install pytest pytest-json-report  # json-report plugin for pytest   
+        run: npm install
 
-      - name: Install Playwright and browsers
+      - name: Run Playwright tests
         run: |
-          pip install playwright
-          python -m playwright install   
-
-      # Run tests. We expose TESTOMATIO and TESTOMATIO_RUN env vars so the reporter (or a later step) can use them.
-      - name: Run pytest
-        env:
-          # These values come from the workflow_dispatch inputs
-          TESTOMATIO: ${{ github.event.inputs.testomatio }}
-          TESTOMATIO_RUN: ${{ github.event.inputs.run }}
-          TESTOMATIO_URL: ${{ github.event.inputs.testomatio_url }}
-        run: |
-          # If a grep string is passed from Testomat, run only matching tests.
-          # We produce a machine-readable report (JSON) for the upload step.
           if [ "${{ github.event.inputs.grep }}" != "" ]; then
-            GREP_EXPR=$(echo "${{ github.event.inputs.grep }}" | sed 's/|/ or /g')
-            pytest -k "$GREP_EXPR" --json-report --json-report-file=report.json -q
+            npx playwright test --grep "${{ github.event.inputs.grep }}" --reporter=list,json --output=report || true
           else
-            pytest --json-report --json-report-file=report.json -q
+            npx playwright test --reporter=list,json --output=report || true
           fi
 
-
-      # Upload / report results to Testomat.
-      # There are two common ways to send results:
-      # A) Use Testomat's official reporter/CLI (recommended if available)
-      # B) Use a direct HTTP upload to Testomat API (fallback)
-      # Replace the placeholder upload command below with the reporter or API call recommended by Testomat.
-      - name: Upload results to Testomat
-        env:
-          TESTOMATIO: ${{ github.event.inputs.testomatio }}    # or from secrets if not input
-          TESTOMATIO_RUN: ${{ github.event.inputs.run }}        # from Testomat’s input
+      - name: Upload results to Testomat.io
         run: |
-          pip install pytestomatio
-      
-          # If you want filtering:
-          if [ "${{ github.event.inputs.grep }}" != "" ]; then
-            TESTOMATIO=$TESTOMATIO TESTOMATIO_RUN=$TESTOMATIO_RUN pytest -k "${{ github.event.inputs.grep }}" --testomatio report
-          else
-            TESTOMATIO=$TESTOMATIO TESTOMATIO_RUN=$TESTOMATIO_RUN pytest --testomatio report
-          fi
-      
-      - name: Fetch Testomat.io case IDs
-        env:
-          TESTOMATIO_API_KEY: ${{ secrets.TESTOMATIO_API_KEY }}
-          TESTOMATIO_PROJECT_ID: ${{ secrets.TESTOMATIO_PROJECT_ID }}
-        run: |
-          pip install requests
-          python fetch_testomatio_case_ids.py
+          npx @testomatio/reporter \
+            --framework playwright \
+            --file report/results.json \
+            --token "${{ github.event.inputs.testomatio }}" \
+            --run "${{ github.event.inputs.run }}"
