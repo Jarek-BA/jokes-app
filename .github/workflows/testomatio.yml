@@ -34,7 +34,7 @@ jobs:
 
       - name: Run Playwright Tests
         run: |
-          npx playwright test --reporter=list,junit --output=tests/test-results/results.xml
+          npx playwright test --reporter=list,junit --output=tests/test-results
 
       - name: Upload results to Testomat.io
         env:
