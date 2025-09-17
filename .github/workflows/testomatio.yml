@@ -42,8 +42,6 @@ jobs:
 
       - name: Upload results to Testomat.io
         run: |
-          npx @testomatio/reporter \
-            --framework playwright \
-            --file report/results.json \
-            --token "${{ github.event.inputs.testomatio }}" \
+          npx @testomatio/reporter xml tests/test-results/junit.xml
+            --token "${{ github.event.inputs.testomatio }}" 
             --run "${{ github.event.inputs.run }}"
