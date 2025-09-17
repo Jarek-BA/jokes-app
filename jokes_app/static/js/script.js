@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Find the element (like a <div> or <p>) with the ID "joke"
   // This is where the joke will be displayed after fetching it
-  const langSelect = document.getElementById("language");
+  const langSelect = document.getElementById("language-selection");
 
   // Load stored language if exists, defaults to English
   const savedLang = localStorage.getItem("jokeLang") || "en";
