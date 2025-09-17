@@ -1,13 +1,13 @@
 const { test, expect } = require('@playwright/test');
 
 test('Language selection dropdown shows supported languages', async ({ page }) => {
-  await page.goto('https://jokes-app-ew5b.onrender.com/'); // Replace with your app URL
+  await page.goto('https://jokes-app-ew5b.onrender.com/');
 
-  // Locate the dropdown (update selector as needed)
-  const dropdown = page.locator('#language-select'); // Replace with the actual selector
+  // Locate the dropdown
+  const dropdown = page.locator('#language-selection'); // ✅ match actual ID in HTML
 
-  // Click to open the dropdown if needed
-  await dropdown.click();
+  // Ensure dropdown is visible
+  await expect(dropdown).toBeVisible();
 
   // Get all option values
   const options = dropdown.locator('option');
