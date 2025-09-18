@@ -29,12 +29,12 @@ for (const [langLabel, langCode] of Object.entries(languageMap)) {
     await dropdown.selectOption(langLabel);
 
     // Click "Get Joke"
-    const jokeButton = page.locator('#get-joke');
+    const jokeButton = page.locator('#joke-btn');
     await expect(jokeButton).toBeVisible();
     await jokeButton.click();
 
     // Wait for the joke display
-    const jokeDisplay = page.locator('#joke-text');
+    const jokeDisplay = page.locator('#joke');
     await expect(jokeDisplay).toBeVisible({ timeout: 15000 });
 
     // Extract joke text
