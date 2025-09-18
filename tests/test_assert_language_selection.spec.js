@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { franc } from 'franc';
+const franc = await import('franc').then(mod => mod.franc);
 
 // Map dropdown labels to franc language codes
 const languageMap = {
