@@ -17,8 +17,6 @@
     "@playwright/test": "^1.55.0",
     "@testomatio/reporter": "^2.3.3",
     "franc": "^6.2.0"
-}
-
   },
   "directories": {
     "test": "tests"
