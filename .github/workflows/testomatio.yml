@@ -1,4 +1,4 @@
-name: Testomat.io CI
+name: Testomat.io CI PROD
 
 on:
   workflow_dispatch: # allow manual triggering from Testomat
