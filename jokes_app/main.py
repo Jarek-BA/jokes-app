@@ -2,7 +2,7 @@
 
 # Import the FastAPI framework, which is used to build web applications and APIs.
 # Think of FastAPI as the "engine" that powers this app.
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query
 
 # Import two types of responses:
 # - HTMLResponse: sends back a webpage (HTML).
@@ -73,23 +73,28 @@ async def read_main(request: Request):
 
 
 # ROUTE 2: The joke endpoint ("/joke")
-@app.get("/joke", response_class=JSONResponse)  # This means: when someone visits "/joke", return JSON data.
-async def get_joke(lang: str = "en"):
-    # URL of the external Joke API.
+@app.get("/joke", response_class=JSONResponse)
+async def get_joke(lang: str = "en", blacklist: str = ""):
+    # ✅ Validate language
     if lang not in ["cs", "de", "en", "es", "fr", "pt"]:
         lang = "en"  # fallback to English
+
+    # ✅ Build API URL with language
     url = f"https://v2.jokeapi.dev/joke/Any?lang={lang}"
 
-    # Create an asynchronous HTTP client.
-    # "async with" means we open the connection, use it, and then close it automatically.
-    async with httpx.AsyncClient() as client:
-        # Send a GET request to the Joke API and wait for the response.
-        res = await client.get(url)
+    # ✅ Handle blacklist flags if provided
+    if blacklist:
+        url += f"&blacklistFlags={blacklist}"
 
-        # Convert the response into JSON format (a dictionary in Python).
-        # This makes the data easy to work with or send back to the browser.
+    # ✅ Log the request details
+    print(f"[DEBUG] Fetching joke with lang='{lang}', blacklist='{blacklist}'")
+
+    async with httpx.AsyncClient() as client:
+        res = await client.get(url)
         data = res.json()
 
-        # Return the joke data as JSON.
-        # Example: {"category": "Programming", "joke": "Why do programmers..."}
-        return data
+    # ✅ Log the joke type (useful for debugging)
+    joke_type = data.get("type", "unknown")
+    print(f"[DEBUG] Joke fetched (type='{joke_type}')")
+
+    return data
