@@ -16,12 +16,8 @@ for (const [langLabel, langCode] of Object.entries(languageMap)) {
     const { franc } = await import('franc');
 
     // Go to the app
-    await page.goto('https://jokes-app-ew5b.onrender.com/', {
-      timeout: 15000,
-      waitUntil: 'domcontentloaded'
-    });
-    // For local runs:
-    // await page.goto('http://127.0.0.1:8000/', { timeout: 15000, waitUntil: 'domcontentloaded' });
+const baseURL = process.env.BASE_URL || 'http://127.0.0.1:8000';
+await page.goto(baseURL, { timeout: 15000, waitUntil: 'domcontentloaded' });
 
     // Select the language in dropdown
     const dropdown = page.locator('#language-selection');

@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Ping Render app
         env:
-          RENDER_URL: https://jokes-app-ew5b.onrender.com/
+          RENDER_URL: https://jokes-app-test.onrender.com/
         run: |
           echo "🟢 Pinging Render app to keep it awake..."
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $RENDER_URL)

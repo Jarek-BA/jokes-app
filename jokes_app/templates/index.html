@@ -1,47 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- This line tells the browser that the document is HTML5 -->
   <meta charset="UTF-8">
-
-  <!-- This makes sure the page looks good on all devices
-       (desktop, tablet, mobile) by scaling it correctly -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- The text shown in the browser tab -->
   <title>😂 Random Jokes App</title>
 
-  <!-- Link to the external CSS file that contains styling rules
-       (colors, fonts, spacing, etc.) -->
+  <!-- Google Font for modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Link to updated CSS -->
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <!-- Main content area of the app -->
   <div class="container">
-    <!-- Page title -->
-    <h1>Random Jokes</h1>
+    <h1>😂 Random Jokes</h1>
 
-      <form id="lang-form">
-        <label for="language-selection">Select Language:</label>
-        <select id="language-selection">
-            <option value="en" selected>English</option>
-            <option value="cs">Czech</option>
-            <option value="de">German</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="pt">Portuguese</option>
-  </select>
-</form>
+    <!-- Language selection -->
+    <div class="controls">
+      <label for="language-selection">Select Language:</label>
+      <select id="language-selection">
+        <option value="en" selected>English</option>
+        <option value="cs">Czech</option>
+        <option value="de">German</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="pt">Portuguese</option>
+      </select>
 
-    <!-- Button the user clicks to fetch a new joke -->
-    <button id="joke-btn">Get a Joke</button>
+      <button id="joke-btn">Get a Joke</button>
+    </div>
 
-    <!-- Placeholder where the joke text will appear -->
-    <p id="joke"></p>
+    <!-- Joke display -->
+    <div id="joke" class="joke-card">Your joke will appear here!</div>
+
+    <!-- Blacklist filter options -->
+    <div class="options">
+      <h3>Blacklist Filters</h3>
+      <label><input type="checkbox" class="flag" value="nsfw"> NSFW</label>
+      <label><input type="checkbox" class="flag" value="religious"> Religious</label>
+      <label><input type="checkbox" class="flag" value="political"> Political</label>
+      <label><input type="checkbox" class="flag" value="sexist"> Sexist</label>
+      <label><input type="checkbox" class="flag" value="explicit"> Explicit</label>
+    </div>
   </div>
 
-  <!-- Link to the external JavaScript file that makes the button work.
-       It handles talking to the server and showing jokes. -->
+  <!-- Optional: small footer -->
+  <footer>
+    <p>Powered by <a href="https://sv443.net/jokeapi/v2/" target="_blank">JokeAPI</a></p>
+  </footer>
+
+  <!-- JS for fetching jokes -->
   <script src="/static/js/script.js"></script>
 </body>
 </html>
