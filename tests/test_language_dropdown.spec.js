@@ -21,8 +21,7 @@ await page.goto(baseURL, { timeout: 15000, waitUntil: 'domcontentloaded' });
     'Czech',
     'German',
     'Spanish',
-    'French',
-    'Portuguese'
+    'French'
   ];
 
   // Assert each expected language is present

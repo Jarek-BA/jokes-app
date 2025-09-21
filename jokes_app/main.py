@@ -76,7 +76,7 @@ async def read_main(request: Request):
 @app.get("/joke", response_class=JSONResponse)
 async def get_joke(lang: str = "en", blacklist: str = ""):
     # ✅ Validate language
-    if lang not in ["cs", "de", "en", "es", "fr", "pt"]:
+    if lang not in ["cs", "de", "en", "es", "fr"]:
         lang = "en"  # fallback to English
 
     # ✅ Build API URL with language

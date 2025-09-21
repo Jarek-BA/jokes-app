@@ -6,8 +6,7 @@ const languageMap = {
   Czech: 'ces',
   German: 'deu',
   Spanish: 'spa',
-  French: 'fra',
-  Portuguese: 'por'
+  French: 'fra'
 };
 
 for (const [langLabel, langCode] of Object.entries(languageMap)) {
