@@ -11,6 +11,10 @@ venv/
 env/
 .venv/
 node_modules/
+alembic/
+
+# Local secrets
+.env
 
 # IDEs
 .idea/
@@ -27,6 +31,7 @@ Thumbs.db
 .coverage
 htmlcov/
 .pytest_cache/
+test-results/
 
 # Render / Deployment
 *.pid
