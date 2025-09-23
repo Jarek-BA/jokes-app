@@ -3,10 +3,6 @@
 import os
 import logging
 from pathlib import Path
-from fastapi import FastAPI, Request, Depends
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 import httpx
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
@@ -14,6 +10,15 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy import select, and_
 
 from dotenv import load_dotenv
+
+# jokes_app/main.py
+from fastapi import FastAPI, Request, Depends
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+
+from jokes_app.database import engine, async_session  # <- Base not needed here
+from jokes_app.models import FactJokes, DimJokeType, DimLanguage, DimLabel
 
 # Import models
 from jokes_app.models import (

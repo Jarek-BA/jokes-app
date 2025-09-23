@@ -1,15 +1,17 @@
 # jokes_app/models.py
-
 from sqlalchemy import Column, Integer, String, Text, Float, Boolean, ForeignKey, DateTime, Table
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base  # <-- keep this import
+
+# Import Base from database module
+from jokes_app.database import Base
 
 # -------------------------------
 # Base declarative class
 # -------------------------------
-Base = declarative_base()  # <-- must assign it here so all models can inherit from Base
+#Base = declarative_base()  # <-- must assign it here so all models can inherit from Base
 
 # -------------------------------
 # Many-to-many bridge table
