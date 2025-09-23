@@ -7,6 +7,8 @@ from sqlalchemy.orm import declarative_base
 # Use default SQLite for testing if not explicitly set
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 
+TESTING = os.getenv("TESTING", "false").lower() == "true"
+
 # Async engine
 engine = create_async_engine(DATABASE_URL, echo=True, future=True)
 
@@ -21,4 +23,5 @@ from typing import AsyncGenerator
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         yield session
+
 
