@@ -212,3 +212,5 @@ async def list_jokes(db: AsyncSession = Depends(get_db)):
             for j in jokes
         ]
     }
+
+

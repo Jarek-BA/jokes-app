@@ -12,3 +12,4 @@ sqlalchemy==2.0.43
 asyncpg>=0.27.0
 SQLAlchemy>=2.0
 aiosqlite>=0.18
+pytest-asyncio==1.2.0
