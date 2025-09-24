@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 
 import httpx
+import logger
 from dotenv import load_dotenv
 from fastapi import FastAPI, APIRouter, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -20,7 +21,7 @@ from jokes_app.database import async_session
 # -------------------------------
 # ENV + LOGGING
 # -------------------------------
-load_dotenv()
+logger.info(f"DATABASE_URL: {os.getenv('DATABASE_URL')}")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
