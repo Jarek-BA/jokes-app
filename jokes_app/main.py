@@ -70,7 +70,7 @@ async def get_joke(
         logger.warning("DB fetch failed, continuing with API: %s", e)
 
     # --- Step 2: Fail early in TESTING mode ---
-    logger.info("Step 2: Fetched joke from DB: %s", joke)
+    logger.info("Step 2: Fetched joke from DB: %s")
     if TESTING:
         raise HTTPException(status_code=404, detail="No jokes found in test mode")
 
