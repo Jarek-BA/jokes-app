@@ -16,10 +16,13 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "postgres")
-DB_USE_SSL = os.getenv("DB_USE_SSL", "true").lower() in ("1", "true", "yes")
 
-# Build the correct asyncpg URL
-ssl_param = "require" if DB_USE_SSL else "disable"
+# Detect if we should use SSL (Supabase / Render)
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
+USE_SSL = ENVIRONMENT in ("production", "render", "supabase")
+
+# Build asyncpg URL
+ssl_param = "require" if USE_SSL else "disable"
 DATABASE_URL = (
     f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?ssl={ssl_param}"
 )
