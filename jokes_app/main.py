@@ -4,7 +4,6 @@ from pathlib import Path
 
 import httpx
 import logger
-from dotenv import load_dotenv
 from fastapi import FastAPI, APIRouter, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -21,9 +20,13 @@ from jokes_app.database import async_session
 # -------------------------------
 # ENV + LOGGING
 # -------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+
+# Add this line to log the actual DATABASE_URL
 logger.info(f"DATABASE_URL: {os.getenv('DATABASE_URL')}")
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 TESTING = os.getenv("TESTING", "false").lower() == "true"
 
