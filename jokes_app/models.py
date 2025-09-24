@@ -92,4 +92,3 @@ class FactJokes(Base):
     joke_type = relationship("DimJokeType", backref="jokes")
     language = relationship("DimLanguage", backref="jokes")
     labels = relationship("DimLabel", secondary="bridge_joke_label", backref="jokes")
-
