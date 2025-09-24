@@ -55,6 +55,7 @@ async def get_joke(
         lang = "en"
 
     # --- Step 1: Try fetching a joke from DB ---
+    logger.info("Step 1: Trying to fetch joke from DB")
     try:
         result = await db.execute(
             select(FactJokes).options(selectinload(FactJokes.joke_type)).limit(1)
@@ -69,10 +70,12 @@ async def get_joke(
         logger.warning("DB fetch failed, continuing with API: %s", e)
 
     # --- Step 2: Fail early in TESTING mode ---
+    logger.info("Step 2: Fetched joke from DB: %s", joke)
     if TESTING:
         raise HTTPException(status_code=404, detail="No jokes found in test mode")
 
     # --- Step 3: Fetch joke from external JokeAPI ---
+    logger.info("Step 3: Calling JokeAPI")
     url = f"https://v2.jokeapi.dev/joke/Any?lang={lang}"
     if blacklist:
         url += f"&blacklistFlags={blacklist}"
@@ -92,6 +95,7 @@ async def get_joke(
     delivery = data.get("delivery")
 
     # --- Step 4: Try inserting into DB ---
+    logger.info("Step 4: JokeAPI returned data: %s", data)
     try:
         # Upsert joke type
         joke_type = await db.execute(select(DimJokeType).where(DimJokeType.name == joke_type_name))
@@ -127,6 +131,7 @@ async def get_joke(
         logger.exception("DB insert failed!")
 
     # --- Step 5: Return joke ---
+    logger.info("Step 5: Trying to insert into DB")
     if joke_type_name == "single":
         return {"type": "single", "joke": joke_text}
     return {"type": "twopart", "setup": setup, "delivery": delivery}
