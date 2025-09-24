@@ -1,6 +1,6 @@
 import os
-from pathlib import Path
 import logging
+from pathlib import Path
 
 import httpx
 from dotenv import load_dotenv
@@ -10,7 +10,6 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
 from jokes_app.database import get_db
 from jokes_app.models import DimLanguage, DimJokeType, FactJokes
@@ -19,7 +18,7 @@ from jokes_app.models import DimLanguage, DimJokeType, FactJokes
 # ENV + LOGGING
 # -------------------------------
 load_dotenv()
-logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 TESTING = os.getenv("TESTING", "false").lower() == "true"
@@ -37,11 +36,14 @@ router = APIRouter()
 # -------------------------------
 # ROUTES
 # -------------------------------
+
 @app.get("/", response_class=HTMLResponse)
 async def read_main(request: Request):
     """Render homepage with template."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html", {"request": request})
 
+
+from sqlalchemy.orm import selectinload
 
 @router.get("/joke", response_class=JSONResponse)
 async def get_joke(
@@ -49,30 +51,38 @@ async def get_joke(
     blacklist: str = "",
     db: AsyncSession = Depends(get_db),
 ):
-    """Fetch a joke from DB or external API, insert into DB if possible."""
+    """Fetch a joke from DB or external API, safely handle DB failures."""
     supported_langs = {"cs": "Czech", "de": "German", "en": "English", "es": "Spanish", "fr": "French"}
     if lang not in supported_langs:
         lang = "en"
 
-    # --- Step 1: Try fetching a joke from DB ---
-    try:
-        result = await db.execute(
-            select(FactJokes).options(selectinload(FactJokes.joke_type)).limit(1)
-        )
-        joke = result.scalar_one_or_none()
-        if joke:
-            joke_type_name = joke.joke_type.name if joke.joke_type else "twopart"
-            if joke_type_name == "single":
-                return {"type": "single", "joke": joke.joke_text or ""}
-            return {"type": "twopart", "setup": joke.setup, "delivery": joke.delivery}
-    except Exception as e:
-        logger.warning("DB fetch failed, continuing with API: %s", e)
+    joke = None
 
-    # --- Step 2: Fail early in TESTING mode ---
-    if TESTING:
-        raise HTTPException(status_code=404, detail="No jokes found in test mode")
+    # -------------------------------
+    # Step 1: Try to fetch from DB
+    # -------------------------------
+    if db:
+        try:
+            result = await db.execute(
+                select(FactJokes).options(selectinload(FactJokes.joke_type)).limit(1)
+            )
+            joke = result.scalar_one_or_none()
+        except Exception as e:
+            logger.warning("DB fetch failed, falling back to API: %s", e)
 
-    # --- Step 3: Fetch joke from external JokeAPI ---
+    # -------------------------------
+    # Step 2: If joke found in DB
+    # -------------------------------
+    if joke:
+        joke_type_name = joke.joke_type.name if joke.joke_type else "twopart"
+        if joke_type_name == "single":
+            return {"type": "single", "joke": joke.joke_text or ""}
+        return {"type": "twopart", "setup": joke.setup, "delivery": joke.delivery}
+
+
+    # -------------------------------
+    # Step 3: Fetch from external API
+    # -------------------------------
     url = f"https://v2.jokeapi.dev/joke/Any?lang={lang}"
     if blacklist:
         url += f"&blacklistFlags={blacklist}"
@@ -91,43 +101,47 @@ async def get_joke(
     setup = data.get("setup")
     delivery = data.get("delivery")
 
-    # --- Step 4: Try inserting into DB ---
-    try:
-        # Upsert joke type
-        joke_type = await db.execute(select(DimJokeType).where(DimJokeType.name == joke_type_name))
-        joke_type_obj = joke_type.scalar_one_or_none()
-        if not joke_type_obj:
-            joke_type_obj = DimJokeType(name=joke_type_name)
-            db.add(joke_type_obj)
-            await db.flush()
+    # -------------------------------
+    # Step 4: Try to insert into DB (optional)
+    # -------------------------------
+    if db:
+        try:
+            # Upsert DimJokeType
+            joke_type_obj = (await db.execute(select(DimJokeType).where(DimJokeType.name == joke_type_name))).scalar_one_or_none()
+            if not joke_type_obj:
+                joke_type_obj = DimJokeType(name=joke_type_name)
+                db.add(joke_type_obj)
+                await db.flush()
 
-        # Upsert language
-        language = await db.execute(select(DimLanguage).where(DimLanguage.code == lang))
-        language_obj = language.scalar_one_or_none()
-        if not language_obj:
-            language_obj = DimLanguage(code=lang, name=supported_langs.get(lang, lang))
-            db.add(language_obj)
-            await db.flush()
+            # Upsert DimLanguage
+            language_obj = (await db.execute(select(DimLanguage).where(DimLanguage.code == lang))).scalar_one_or_none()
+            if not language_obj:
+                language_obj = DimLanguage(code=lang, name=supported_langs.get(lang, lang))
+                db.add(language_obj)
+                await db.flush()
 
-        # Insert joke
-        new_joke = FactJokes(
-            joke_type_id=joke_type_obj.id,
-            language_id=language_obj.id,
-            joke_text=joke_text,
-            setup=setup,
-            delivery=delivery,
-            is_active=True,
-            is_flagged=False,
-        )
-        db.add(new_joke)
-        await db.commit()
-    except Exception as e:
-        logger.warning("DB insert failed, skipping DB storage: %s", e)
+            # Insert FactJokes
+            new_joke = FactJokes(
+                joke_type_id=joke_type_obj.id,
+                language_id=language_obj.id,
+                joke_text=joke_text,
+                setup=setup,
+                delivery=delivery,
+                is_active=True,
+                is_flagged=False,
+            )
+            db.add(new_joke)
+            await db.commit()
+        except Exception as e:
+            logger.warning("DB insert failed, continuing anyway: %s", e)
 
-    # --- Step 5: Return joke ---
+    # -------------------------------
+    # Step 5: Return joke
+    # -------------------------------
     if joke_type_name == "single":
         return {"type": "single", "joke": joke_text}
     return {"type": "twopart", "setup": setup, "delivery": delivery}
+
 
 
 # -------------------------------
