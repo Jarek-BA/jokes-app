@@ -13,6 +13,9 @@ from sqlalchemy import select
 
 from jokes_app.database import get_db
 from jokes_app.models import DimLanguage, DimJokeType, FactJokes
+from contextlib import asynccontextmanager
+from jokes_app.database import async_session
+
 
 # -------------------------------
 # ENV + LOGGING
@@ -36,6 +39,22 @@ router = APIRouter()
 # -------------------------------
 # ROUTES
 # -------------------------------
+
+@asynccontextmanager
+async def lifespan(fastapi_app: FastAPI):
+    try:
+        async with async_session() as session:
+            await session.execute(select(1))
+        logger.info("✅ DB connection verified on startup")
+    except Exception as e:
+        logger.error("❌ DB connection failed on startup: %s", e)
+
+    yield  # App runs here
+
+    logger.info("🛑 App shutdown complete")
+
+app = FastAPI(title="Random Joke App", lifespan=lifespan)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def read_main(request: Request):
@@ -142,7 +161,18 @@ async def get_joke(
         return {"type": "single", "joke": joke_text}
     return {"type": "twopart", "setup": setup, "delivery": delivery}
 
-
+@router.get("/debug-db-connection", response_class=JSONResponse)
+async def debug_db_connection(db: AsyncSession = Depends(get_db)):
+    """Test DB connectivity and log detailed errors."""
+    try:
+        await db.execute(select(1))
+        logger.info("✅ DB connection successful")
+        return {"status": "success", "message": "DB connection established"}
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        logger.error("❌ DB connection failed:\n%s", tb)
+        return {"status": "error", "message": str(e), "traceback": tb}
 
 # -------------------------------
 # REGISTER ROUTER

@@ -1,31 +1,36 @@
 # jokes_app/database.py
 import os
 from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-# Load environment variables (if not already loaded elsewhere)
 from dotenv import load_dotenv
 
+# Load environment variables from .env
 load_dotenv()
 
 # -----------------------
-# DB CONFIGURATION
+# DATABASE CONFIGURATION
 # -----------------------
 DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST") #DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "postgres")
+DB_USE_SSL = os.getenv("DB_USE_SSL", "true").lower() in ("1", "true", "yes")
 
-# Construct URL
-DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# Build the correct asyncpg URL
+ssl_param = "require" if DB_USE_SSL else "disable"
+DATABASE_URL = (
+    f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?ssl={ssl_param}"
+)
+
 print("DATABASE_URL:", DATABASE_URL)  # ✅ Debugging
 
-# Create async engine & session
+# -----------------------
+# SQLALCHEMY BASE & ENGINE
+# -----------------------
+Base = declarative_base()
+
 engine = create_async_engine(DATABASE_URL, echo=False, future=True)
 async_session = async_sessionmaker(
     bind=engine,
@@ -34,7 +39,7 @@ async_session = async_sessionmaker(
 )
 
 # -----------------------
-# DEPENDENCY
+# ASYNC DEPENDENCY
 # -----------------------
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Provide an async database session."""
