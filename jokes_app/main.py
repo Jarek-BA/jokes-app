@@ -121,8 +121,10 @@ async def get_joke(
         )
         db.add(new_joke)
         await db.commit()
+        logger.info("Inserted joke into DB: %s", joke_text)
     except Exception as e:
-        logger.warning("DB insert failed, skipping DB storage: %s", e)
+        await db.rollback()
+        logger.exception("DB insert failed!")
 
     # --- Step 5: Return joke ---
     if joke_type_name == "single":
