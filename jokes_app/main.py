@@ -1,3 +1,4 @@
+# jokes_app/main.py
 import os
 import logging
 from pathlib import Path
@@ -10,10 +11,11 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from jokes_app.database import get_db
 from jokes_app.models import DimLanguage, DimJokeType, FactJokes
 from contextlib import asynccontextmanager
-from jokes_app.database import async_session
+from jokes_app.database import async_session, get_db
+
+
 
 
 # -------------------------------
@@ -40,21 +42,34 @@ router = APIRouter()
 # -------------------------------
 
 @asynccontextmanager
-async def lifespan(fastapi_app: FastAPI):
-    logger.info(f"DATABASE_URL: {os.getenv('DATABASE_URL')}")
+async def lifespan(app: FastAPI):
+    """
+    FastAPI lifespan context.
+    Verifies DB connection on startup.
+    Does NOT fall back to localhost if connection fails.
+    """
+    db_url = os.getenv("DATABASE_URL")
+    logger.info(f"DATABASE_URL: {db_url}")
 
     try:
         async with async_session() as session:
-            await session.execute(select(1))
-        logger.info("✅ DB connection verified on startup")
+            # Using SQLAlchemy Core select for async compatibility
+            result = await session.execute(select(1))
+            row = result.scalar()
+            logger.info(f"✅ DB connection verified on startup, test result: {row}")
+
     except Exception as e:
-        logger.error("❌ DB connection failed on startup: %s", e)
+        logger.error(f"❌ DB connection failed on startup: {e}")
+        # Optionally prevent startup:
+        # raise RuntimeError("Database is not reachable") from e
 
     yield  # App runs here
 
     logger.info("🛑 App shutdown complete")
 
-app = FastAPI(title="Random Joke App", lifespan=lifespan)
+
+# Instantiate app with lifespan
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/", response_class=HTMLResponse)
