@@ -43,29 +43,18 @@ router = APIRouter()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    FastAPI lifespan context.
-    Verifies DB connection on startup.
-    Does NOT fall back to localhost if connection fails.
-    """
-    db_url = os.getenv("DATABASE_URL")
-    logger.info(f"DATABASE_URL: {db_url}")
-
+    from jokes_app.database import DATABASE_URL
+    logger.info(f"DATABASE_URL: {DATABASE_URL}")
     try:
         async with async_session() as session:
-            # Using SQLAlchemy Core select for async compatibility
             result = await session.execute(select(1))
             row = result.scalar()
             logger.info(f"✅ DB connection verified on startup, test result: {row}")
-
     except Exception as e:
         logger.error(f"❌ DB connection failed on startup: {e}")
-        # Optionally prevent startup:
-        # raise RuntimeError("Database is not reachable") from e
-
-    yield  # App runs here
-
+    yield
     logger.info("🛑 App shutdown complete")
+
 
 
 # Instantiate app with lifespan
