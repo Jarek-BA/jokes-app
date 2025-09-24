@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import logging
 
 import httpx
 from dotenv import load_dotenv
@@ -13,10 +14,6 @@ from sqlalchemy.orm import selectinload
 
 from jokes_app.database import get_db
 from jokes_app.models import DimLanguage, DimJokeType, FactJokes
-
-import logging
-
-
 
 # -------------------------------
 # ENV + LOGGING
@@ -40,8 +37,6 @@ router = APIRouter()
 # -------------------------------
 # ROUTES
 # -------------------------------
-
-
 @app.get("/", response_class=HTMLResponse)
 async def read_main(request: Request):
     """Render homepage with template."""
@@ -59,9 +54,7 @@ async def get_joke(
     if lang not in supported_langs:
         lang = "en"
 
-    joke_data = None
-
-    # --- Step 1: Try DB first ---
+    # --- Step 1: Try fetching a joke from DB ---
     try:
         result = await db.execute(
             select(FactJokes).options(selectinload(FactJokes.joke_type)).limit(1)
@@ -79,7 +72,7 @@ async def get_joke(
     if TESTING:
         raise HTTPException(status_code=404, detail="No jokes found in test mode")
 
-    # --- Step 3: Fetch from external JokeAPI ---
+    # --- Step 3: Fetch joke from external JokeAPI ---
     url = f"https://v2.jokeapi.dev/joke/Any?lang={lang}"
     if blacklist:
         url += f"&blacklistFlags={blacklist}"
@@ -135,7 +128,6 @@ async def get_joke(
     if joke_type_name == "single":
         return {"type": "single", "joke": joke_text}
     return {"type": "twopart", "setup": setup, "delivery": delivery}
-
 
 
 # -------------------------------
